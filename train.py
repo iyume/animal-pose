@@ -7,7 +7,7 @@ import torch.optim
 from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
-from datasets import AnimalPose
+from datasets import AnimalPose, CowDataset
 from model import Net
 from utils import State
 
@@ -16,7 +16,7 @@ ckpt_dir.mkdir(exist_ok=True)
 
 
 class Trainer:
-    model: ClassVar = Net(3, 40)  # 额外增加一个类标注非关键点
+    model: ClassVar = Net(3, 12)  # 额外增加一个类标注非关键点
     model.train()
 
     def __init__(
@@ -29,11 +29,12 @@ class Trainer:
     ) -> None:
         # assert batch_size == 1, "因为图片尺寸不一致，必须使用 1 batch"
         self.device = torch.device(device)
-        dataset = AnimalPose(dataset_dir=dataset_dir)
+        # dataset = AnimalPose(dataset_dir=dataset_dir)
+        dataset = CowDataset(dataset_dir=dataset_dir)
         self.dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         self.model.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), learning_rate)
-        self.loss_fn = nn.MSELoss()
+        self.loss_fn = nn.L1Loss()
         if pth_file is None:
             state = State(
                 epoch=0,
@@ -93,4 +94,4 @@ def cli(pth_file: Optional[str]):
 
 
 if __name__ == "__main__":
-    Trainer(dataset_dir="/home/iyume/datasets/Animal-Pose", batch_size=2).train()
+    Trainer(dataset_dir="./cow dataset", batch_size=20).train()
