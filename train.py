@@ -56,7 +56,7 @@ class Trainer:
         loss_history = []
         images: Tensor
         label: Tensor
-        for idx, (images, label) in enumerate(self.dataloader):
+        for idx, (images, label, _) in enumerate(self.dataloader):
             images = images.to(self.device)
             label = label.to(self.device)
             self.optimizer.zero_grad()
