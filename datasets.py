@@ -17,6 +17,7 @@ class AnimalPose(Dataset[Tuple[Tensor, Tensor]]):
     每个点由 3 个数字组成，前两个数字是 (Col,Row)，第三个数字是 0/1 表示点是否存在
 
     label 范围 0-20，0为背景
+        *变更: label是20个点形成的长度40的序列
     """
 
     def __init__(self, *, dataset_dir: str = ".") -> None:
@@ -29,11 +30,15 @@ class AnimalPose(Dataset[Tuple[Tensor, Tensor]]):
         img = cv2.imread(img_path)
         img = cv2.resize(img, (500, 500))
         assert img.ndim == 3
-        label = np.zeros(img.shape[:2], dtype=np.int8)
-        for i, p in enumerate(ann.keypoints):
-            if p[2] == 1:
-                label[p[:2]] = i + 1
-        return self.transform(img), torch.from_numpy(label).to(torch.long)
+        # label = np.zeros(img.shape[:2], dtype=np.int8)
+        # for i, p in enumerate(ann.keypoints):
+        #     if p[2] == 1:
+        #         label[p[:2]] = i + 1
+        # return self.transform(img), torch.from_numpy(label).to(torch.long)
+        label = torch.tensor(
+            [p[:2] for p in ann.keypoints], dtype=torch.float
+        ).flatten()
+        return self.transform(img), label
 
     @staticmethod
     def transform(im: np.ndarray) -> Tensor:

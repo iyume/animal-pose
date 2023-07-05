@@ -16,7 +16,7 @@ ckpt_dir.mkdir(exist_ok=True)
 
 
 class Trainer:
-    model: ClassVar = Net(3, 20 + 1)  # 额外增加一个类标注非关键点
+    model: ClassVar = Net(3, 40)  # 额外增加一个类标注非关键点
     model.train()
 
     def __init__(
@@ -33,7 +33,7 @@ class Trainer:
         self.dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         self.model.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), learning_rate)
-        self.loss_fn = nn.CrossEntropyLoss()
+        self.loss_fn = nn.MSELoss()
         if pth_file is None:
             state = State(
                 epoch=0,
@@ -93,4 +93,4 @@ def cli(pth_file: Optional[str]):
 
 
 if __name__ == "__main__":
-    Trainer(dataset_dir="/home/iyume/datasets/Animal-Pose").train()
+    Trainer(dataset_dir="/home/iyume/datasets/Animal-Pose", batch_size=2).train()
