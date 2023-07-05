@@ -11,9 +11,7 @@ from torch.utils.data import DataLoader
 from datasets import AnimalPose
 from model import Net
 from utils import State
-from keypoints import Annotation
 
-dataset = AnimalPose(dataset_dir="/home/iyume/datasets/Animal-Pose")
 
 ckpt_dir = Path("ckpt")
 ckpt_dir.mkdir(exist_ok=True)
@@ -29,9 +27,11 @@ class Trainer:
         learning_rate: float = 1e-3,
         batch_size: int = 10,
         pth_file: Optional[str] = None,
+        dataset_dir: str = ".",
     ) -> None:
         # assert batch_size == 1, "因为图片尺寸不一致，必须使用 1 batch"
         self.device = torch.device(device)
+        dataset = AnimalPose(dataset_dir=dataset_dir)
         self.dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         self.model.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), learning_rate)
