@@ -1,4 +1,4 @@
-from __future__ import annotations
+from __future__ import annotations as _
 
 from pydantic import BaseModel
 
@@ -29,4 +29,12 @@ def check_annotations():
         assert len(ann.keypoints) == 20
 
 
+def filter_annotations():
+    # 过滤只有牛的 label
+    global annotations
+    new_annotations = [i for i in annotations if i.category_id == 5]
+    annotations = new_annotations
+
+
 check_annotations()
+filter_annotations()

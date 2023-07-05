@@ -69,6 +69,9 @@ def draw_bbox(im, xmin, ymin, xmax, ymax, color):
     return im
 
 
+dataset_dir = "/home/iyume/datasets/Animal-Pose"
+
+
 def visualize_json():
     output_dir = "visualization_animalpose"
     os.makedirs(output_dir, exist_ok=True)
@@ -77,7 +80,7 @@ def visualize_json():
         imagename = images[str(anno.image_id)]
         bbox = anno.bbox
         keypoints = anno.keypoints
-        image_path = os.path.join("images", imagename)
+        image_path = os.path.join(dataset_dir, "images", imagename)
         if not imagename in im_dict:
             im = cv2.imread(image_path)
         else:

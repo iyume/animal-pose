@@ -2,23 +2,21 @@ from pathlib import Path
 from typing import ClassVar, Optional, cast
 
 import click
-from torch import Tensor
 import torch
 import torch.optim
-from torch import nn
+from torch import Tensor, nn
 from torch.utils.data import DataLoader
 
 from datasets import AnimalPose
 from model import Net
 from utils import State
 
-
 ckpt_dir = Path("ckpt")
 ckpt_dir.mkdir(exist_ok=True)
 
 
 class Trainer:
-    model: ClassVar = Net(3, 20 * 2)  # 额外增加一个类标注非关键点
+    model: ClassVar = Net(3, 20 + 1)  # 额外增加一个类标注非关键点
     model.train()
 
     def __init__(
@@ -35,7 +33,7 @@ class Trainer:
         self.dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
         self.model.to(self.device)
         self.optimizer = torch.optim.Adam(self.model.parameters(), learning_rate)
-        self.loss_fn = nn.MSELoss()
+        self.loss_fn = nn.CrossEntropyLoss()
         if pth_file is None:
             state = State(
                 epoch=0,
@@ -56,13 +54,13 @@ class Trainer:
     def train_one(self, create_checkpoint: bool = True):
         loss_history = []
         images: Tensor
-        keypoints: Tensor
-        for idx, (images, keypoints) in enumerate(self.dataloader):
+        label: Tensor
+        for idx, (images, label) in enumerate(self.dataloader):
             images = images.to(self.device)
-            keypoints = keypoints.to(self.device)
+            label = label.to(self.device)
             self.optimizer.zero_grad()
             out = self.model(images)
-            loss: torch.Tensor = self.loss_fn(out, keypoints)
+            loss: torch.Tensor = self.loss_fn(out, label)
             loss.backward()
             loss_history.append(loss.item())
             self.optimizer.step()
@@ -95,4 +93,4 @@ def cli(pth_file: Optional[str]):
 
 
 if __name__ == "__main__":
-    Trainer().train()
+    Trainer(dataset_dir="/home/iyume/datasets/Animal-Pose").train()
