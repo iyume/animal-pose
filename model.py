@@ -5,6 +5,8 @@ from torch.nn import functional as F
 
 
 class Net(nn.Module):
+    version = "v0.1"
+
     def __init__(self, in_channels: int, n_classes: int) -> None:
         super().__init__()
         self.conv0 = nn.Sequential(
