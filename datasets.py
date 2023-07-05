@@ -1,10 +1,10 @@
+import json
 from pathlib import Path
 from typing import List, Tuple
 
 import cv2
 import numpy as np
 import torch
-import json
 import torchvision.transforms.functional as F
 from torch import Tensor
 from torch.utils.data import Dataset
@@ -31,7 +31,7 @@ class AnimalPose(Dataset[Tuple[Tensor, Tensor]]):
         img = cv2.imread(img_path)
         img = cv2.resize(img, (400, 400))
         assert img.ndim == 3
-        # label = np.zeros(img.shape[:2], dtype=np.int8)
+        # label = np.zeros(img.shape[:2], dtype=np.uint8)
         # for i, p in enumerate(ann.keypoints):
         #     if p[2] == 1:
         #         label[p[:2]] = i + 1
@@ -59,7 +59,7 @@ class AnimalPose(Dataset[Tuple[Tensor, Tensor]]):
         return len(annotations) - self.num_test
 
 
-class CowDataset(Dataset[Tuple[Tensor, Tensor]]):
+class CowDataset(Dataset[Tuple[Tensor, Tensor, str]]):
     """Returns image and flatten 5 points."""
 
     def __init__(self, dataset_dir="./cow dataset") -> None:
@@ -74,18 +74,27 @@ class CowDataset(Dataset[Tuple[Tensor, Tensor]]):
                 assert json_path.exists(), f"json for {img_path} not exists"
                 self.annotations.append(str(json_path))
 
-    def __getitem__(self, index: int) -> Tuple[Tensor, Tensor]:
+    def __getitem__(self, index: int) -> Tuple[Tensor, Tensor, str]:
         img = cv2.imread(self.images[index])
+        ratioH = 400 / img.shape[0]
+        ratioW = 400 / img.shape[1]
         img = cv2.resize(img, (400, 400))
         assert img.ndim == 3
         annotation = json.loads(open(self.annotations[index]).read())
-        points = []
+        points: list[list[int]] = []
         for i in annotation["shapes"]:
             assert len(i["points"]) == 1
             assert len(i["points"][0]) == 2
             points.append([int(i["points"][0][0]), int(i["points"][0][1])])
         assert len(points) == 6
-        return self.transform(img), torch.tensor(points).flatten().to(torch.long)
+        shifted_points: list[list[int]] = []
+        for p in points:
+            shifted_points.append([int(p[0] * ratioH), int(p[1] * ratioW)])
+        return (
+            self.transform(img),
+            torch.tensor(shifted_points).flatten().to(torch.long),
+            self.images[index],
+        )
 
     @staticmethod
     def transform(im: np.ndarray) -> Tensor:
