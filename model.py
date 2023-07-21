@@ -13,13 +13,23 @@ class Net(nn.Module):
         self.conv1 = nn.Sequential(
             nn.Conv2d(in_channels, 32, 11, 4, 5),
             nn.Conv2d(32, 32, 3, 1, 1),
+            nn.ReLU(),
         )
         # 100x100
-        self.conv2 = nn.Conv2d(32, 48, 3, 2, 1)
+        self.conv2 = nn.Sequential(
+            nn.Conv2d(32, 48, 3, 2, 1),
+            nn.ReLU(),
+        )
         # 50x50
-        self.conv3 = nn.Conv2d(48, 64, 3, 2, 1)
+        self.conv3 = nn.Sequential(
+            nn.Conv2d(48, 64, 3, 2, 1),
+            nn.ReLU(),
+        )
         # 25x25
-        self.conv4 = nn.Conv2d(64, 64, 3, 2, 1)
+        self.conv4 = nn.Sequential(
+            nn.Conv2d(64, 64, 3, 2, 1),
+            nn.ReLU(),
+        )
         # 12x12
         self.fc1 = nn.Linear(13 * 13 * 64, 4000)
         self.fc2 = nn.Linear(4000, 4000)
